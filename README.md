@@ -34,7 +34,7 @@ Piecewise Linear Unit (PLU) is an activation function that allows for multiple l
 
 ## TODO
 
-Some activation functions that can be added in the future:
+Some activation functions/loss functions that can be added in the future:
 
 - PiLU
 - DoubleRELU
@@ -43,6 +43,10 @@ Some activation functions that can be added in the future:
 - Softplus
 - GeLU
 - PReLU
+- Softmin
+- Softsign
+- Softshrink
+- Hardshrink
 
 
 
