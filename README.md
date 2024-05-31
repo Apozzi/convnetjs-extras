@@ -1,4 +1,4 @@
-### Convnetjs-Extras
+# Convnetjs-Extras
 
 An implementation of additional functionalities for Convnetjs, including various activation functions.
 
@@ -17,19 +17,19 @@ Simply add the convnetjs-extras scripts along with the convnetjs library.
 ```
 
 ## Activation Functions
-# LeakyRELU
+### LeakyRELU
 Leaky Rectified Linear Unit (LeakyRELU) is an activation function that allows a small, non-zero gradient when the unit is not active, which helps to keep the information flowing through the network during training.
 
-# ELU
+### ELU
 Exponential Linear Unit (ELU) is an activation function that tends to converge cost to zero faster and produce more accurate results. It adds a smooth transition to negative inputs, reducing the vanishing gradient problem.
 
-# FReLU
+### FReLU
 Fixed Rectified Linear Unit (FReLU) is a variant of the ReLU activation function that includes a fixed parameter for the threshold, adding flexibility to the learning process.
 
-# Swish
+### Swish
 Swish is a smooth, non-monotonic activation function that tends to perform better than ReLU on deeper models. It is defined as the product of the input and its sigmoid function.
 
-# PLU
+### PLU
 Piecewise Linear Unit (PLU) is an activation function that allows for multiple linear segments, which can help in capturing complex patterns in the data.
 
 
