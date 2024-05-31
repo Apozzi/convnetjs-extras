@@ -43,6 +43,7 @@ Some activation functions/loss functions that can be added in the future:
 - Softplus
 - GeLU
 - PReLU
+- RReLU
 - Softmin
 - Softsign
 - Softshrink
