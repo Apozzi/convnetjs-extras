@@ -32,6 +32,16 @@ Swish is a smooth, non-monotonic activation function that tends to perform bette
 ### PLU
 Piecewise Linear Unit (PLU) is an activation function that allows for multiple linear segments, which can help in capturing complex patterns in the data.
 
+## TODO
+
+Some activation functions that will be added:
+
+- PiLU
+- DoubleRELU
+- Mish
+- Logish
+- Softplus
+
 
 
 
