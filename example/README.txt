@@ -1,0 +1,1 @@
+Instalar "npm install -g live-server" e rodar o html com "live-server"
