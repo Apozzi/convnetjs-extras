@@ -26,7 +26,7 @@ Exponential Linear Unit (ELU) is an activation function that tends to converge c
 ### FReLU
 Fixed Rectified Linear Unit (FReLU) is a variant of the ReLU activation function that includes a fixed parameter for the threshold, adding flexibility to the learning process.
 
-### Swish
+### Swish/SiLU
 Swish is a smooth, non-monotonic activation function that tends to perform better than ReLU on deeper models. It is defined as the product of the input and its sigmoid function.
 
 ### PLU
