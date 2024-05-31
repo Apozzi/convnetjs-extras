@@ -40,6 +40,7 @@ Some activation functions/loss functions that can be added in the future:
 - DoubleRELU
 - Mish
 - Gish
+- Smish
 - Logish
 - Softplus
 - GeLU
