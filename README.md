@@ -42,6 +42,7 @@ Some activation functions that can be added in the future:
 - Logish
 - Softplus
 - GeLU
+- PReLU
 
 
 
