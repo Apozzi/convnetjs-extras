@@ -34,13 +34,14 @@ Piecewise Linear Unit (PLU) is an activation function that allows for multiple l
 
 ## TODO
 
-Some activation functions that will be added:
+Some activation functions that can be added in the future:
 
 - PiLU
 - DoubleRELU
 - Mish
 - Logish
 - Softplus
+- GeLU
 
 
 
