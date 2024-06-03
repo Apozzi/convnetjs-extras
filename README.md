@@ -32,17 +32,25 @@ Swish is a smooth, non-monotonic activation function that tends to perform bette
 ### PLU
 Piecewise Linear Unit (PLU) is an activation function that allows for multiple linear segments, which can help in capturing complex patterns in the data.
 
+### Softplus
+Softplus is a smooth and continuous activation function defined as the logarithm of the exponential of the input plus one. It has the advantage of being differentiable everywhere, which allows for stable gradients during training.
+
+### Mish
+Mish is a self-regularized activation function that smoothly interpolates between the linear and nonlinear regimes. It has shown promising results in various deep learning tasks, often outperforming traditional activation functions like ReLU.
+
+### PiLU
+Piecewise Linear Unit (PiLU) is an activation function that introduces two linear segments with different slopes, creating a piecewise linear transition. It enhances the representational capacity of the network by allowing for more flexible and diverse transformations of the input data.
+
+### DoubleReLU
+DoubleReLU is an activation function composed of two rectified linear units (ReLU) applied sequentially. It provides a simple yet effective way to introduce non-linearity into the network while maintaining computational efficiency. The double application of ReLU allows for a more pronounced transformation of the input data, potentially capturing more complex patterns in the data.
+
 ## TODO
 
 Some activation functions/loss functions that can be added in the future:
 
-- PiLU
-- DoubleRELU
-- Mish
 - Gish
 - Smish
 - Logish
-- Softplus
 - GeLU
 - PReLU
 - RReLU

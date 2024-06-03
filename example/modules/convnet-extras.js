@@ -6,7 +6,7 @@
     var LeakyReluLayer = function(opt) {
         var opt = opt || {};
     
-        this.a = opt.a ? opt.a : 0.01;
+        this.alpha = opt.alpha ? opt.alpha : 0.01;
         this.out_sx = opt.in_sx;
         this.out_sy = opt.in_sy;
         this.out_depth = opt.in_depth;
@@ -19,7 +19,7 @@
           var N = V.w.length;
           var V2w = V2.w;
           for(var i=0;i<N;i++) { 
-            if(V2w[i] < 0) V2w[i] = V2w[i]*this.a; 
+            if(V2w[i] < 0) V2w[i] = V2w[i]*this.alpha; 
           }
           this.out_act = V2;
           return this.out_act;
@@ -30,7 +30,7 @@
           var N = V.w.length;
           V.dw = global.zeros(N); 
           for(var i=0;i<N;i++) {
-            if(V2.w[i] <= 0) V.dw[i] = V2.dw[i]*this.a; 
+            if(V2.w[i] <= 0) V.dw[i] = V2.dw[i]*this.alpha; 
             else V.dw[i] = V2.dw[i];
           }
         },
@@ -58,7 +58,7 @@
       var EluLayer = function(opt) {
         var opt = opt || {};
     
-        this.a = opt.a ? opt.a : 0.01;
+        this.alpha = opt.alpha ? opt.alpha : 0.01;
         this.out_sx = opt.in_sx;
         this.out_sy = opt.in_sy;
         this.out_depth = opt.in_depth;
@@ -71,7 +71,7 @@
           var N = V.w.length;
           var V2w = V2.w;
           for(var i=0;i<N;i++) { 
-            if(V2w[i] <= 0) V2w[i] = this.a*(Math.exp(V2w[i])-1);
+            if(V2w[i] <= 0) V2w[i] = this.alpha*(Math.exp(V2w[i])-1);
           }
           this.out_act = V2;
           return this.out_act;
@@ -82,7 +82,7 @@
           var N = V.w.length;
           V.dw = global.zeros(N); 
           for(var i=0;i<N;i++) {
-            if(V2.w[i] <= 0) V.dw[i] = V2.dw[i]*Math.exp(V2.dw[i])*this.a; 
+            if(V2.w[i] <= 0) V.dw[i] = V2.dw[i]*Math.exp(V2.dw[i])*this.alpha; 
             else V.dw[i] = V2.dw[i];
           }
         },
@@ -216,7 +216,7 @@
       var PLULayer = function(opt) {
         var opt = opt || {};
     
-        this.a = opt.a ? opt.a : 0.01;
+        this.alpha= opt.alpha ? opt.alpha : 0.01;
         this.out_sx = opt.in_sx;
         this.out_sy = opt.in_sy;
         this.out_depth = opt.in_depth;
@@ -230,8 +230,8 @@
           var V2w = V2.w;
           var Vw = V.w;
           for(var i=0;i<N;i++) { 
-             if (V2w[i] > 1) V2w[i] = (V2w[i]-1)*this.a+1;
-             else if(V2w[i] < -1) V2w[i] = (V2w[i]+1)*this.a-1;
+             if (V2w[i] > 1) V2w[i] = (V2w[i]-1)*this.alpha+1;
+             else if(V2w[i] < -1) V2w[i] = (V2w[i]+1)*this.alpha-1;
           }
           this.out_act = V2;
           return this.out_act;
@@ -242,7 +242,7 @@
           var N = V.w.length;
           V.dw = global.zeros(N); 
           for(var i=0;i<N;i++) {
-            if(V2.w[i] < -1 || V2.w[i] > 1) V.dw[i] = V2.dw[i]*this.a; 
+            if(V2.w[i] < -1 || V2.w[i] > 1) V.dw[i] = V2.dw[i]*this.alpha; 
             else V.dw[i] = V2.dw[i];
           }
           
@@ -265,6 +265,291 @@
           this.layer_type = json.layer_type; 
         }
       }
+
+      // https://arxiv.org/pdf/2108.00700
+      var DoubleReLULayer = function(opt) {
+        var opt = opt || {};
+    
+        this.alpha = opt.alpha ? opt.alpha : 0.5;
+        this.out_sx = opt.in_sx;
+        this.out_sy = opt.in_sy;
+        this.out_depth = opt.in_depth;
+        this.layer_type = 'double_relu';
+      }
+      DoubleReLULayer.prototype = {
+        forward: function(V, is_training) {
+          this.in_act = V;
+          var V2 = V.clone();
+          var N = V.w.length;
+          var V2w = V2.w;
+          var Vw = V.w;
+          for(var i=0;i<N;i++) { 
+             if (V2w[i] <  this.alpha) V2w[i] = V2w[i] + this.alpha;
+             else if(V2w[i] > this.alpha) V2w[i] = V2w[i] - this.alpha;
+          }
+          this.out_act = V2;
+          return this.out_act;
+        },
+        backward: function() {
+          var V = this.in_act; 
+          var V2 = this.out_act;
+          var N = V.w.length;
+          V.dw = global.zeros(N); 
+          for(var i=0;i<N;i++) {
+            if(Math.abs(V2.w[i]) > this.alpha) V.dw[i] = V2.dw[i]*this.alpha; 
+            else V.dw[i] = V2.dw[i];
+          }
+          
+        },
+        getParamsAndGrads: function() {
+          return [];
+        },
+        toJSON: function() {
+          var json = {};
+          json.out_depth = this.out_depth;
+          json.out_sx = this.out_sx;
+          json.out_sy = this.out_sy;
+          json.layer_type = this.layer_type;
+          return json;
+        },
+        fromJSON: function(json) {
+          this.out_depth = json.out_depth;
+          this.out_sx = json.out_sx;
+          this.out_sy = json.out_sy;
+          this.layer_type = json.layer_type; 
+        }
+      }
+
+
+      // https://arxiv.org/pdf/2108.00700
+      var PiLULayer = function(opt) {
+        var opt = opt || {};
+    
+        this.alpha = opt.alpha ? opt.alpha : 1.5;
+        this.beta = opt.beta ? opt.beta : 3;
+        this.gamma = opt.gamma ? opt.gamma : 1;
+        this.out_sx = opt.in_sx;
+        this.out_sy = opt.in_sy;
+        this.out_depth = opt.in_depth;
+        this.layer_type = 'pilu';
+      }
+      PiLULayer.prototype = {
+        forward: function(V, is_training) {
+          this.in_act = V;
+          var V2 = V.clone();
+          var N = V.w.length;
+          var V2w = V2.w;
+          var Vw = V.w;
+          for(var i=0;i<N;i++) { 
+            if (Vw[i] > gamma) {
+              V2w[i] = alpha * Vw[i] + gamma * (1 - alpha);
+            } else {
+              V2w[i] = beta * Vw[i] + gamma * (1 - beta);
+            }
+          }
+          this.out_act = V2;
+          return this.out_act;
+        },
+        backward: function() {
+          var V = this.in_act; 
+          var V2 = this.out_act;
+          var N = V.w.length;
+          V.dw = global.zeros(N); 
+          for(var i=0;i<N;i++) {
+            if (V.w[i] > gamma) {
+              V.dw[i] = alpha * V2.dw[i];
+            } else {
+              V.dw[i] = beta * V2.dw[i];
+            }
+          }
+          
+        },
+        getParamsAndGrads: function() {
+          return [];
+        },
+        toJSON: function() {
+          var json = {};
+          json.out_depth = this.out_depth;
+          json.out_sx = this.out_sx;
+          json.out_sy = this.out_sy;
+          json.layer_type = this.layer_type;
+          return json;
+        },
+        fromJSON: function(json) {
+          this.out_depth = json.out_depth;
+          this.out_sx = json.out_sx;
+          this.out_sy = json.out_sy;
+          this.layer_type = json.layer_type; 
+        }
+      }
+
+
+    //https://arxiv.org/pdf/1908.08681
+    var MishLayer = function(opt) {
+      var opt = opt || {};
+  
+      this.out_sx = opt.in_sx;
+      this.out_sy = opt.in_sy;
+      this.out_depth = opt.in_depth;
+      this.layer_type = 'mish';
+    }
+    
+    MishLayer.prototype = {
+        forward: function(V, is_training) {
+            this.in_act = V;
+            var V2 = V.clone();
+            var N = V.w.length;
+            var V2w = V2.w;
+            var Vw = V.w;
+    
+            for (var i = 0; i < N; i++) {
+                V2w[i] = Vw[i] * Math.tanh(Math.log(1 + Math.exp(Vw[i])));
+            }
+    
+            this.out_act = V2;
+            return this.out_act;
+        },
+        backward: function() {
+            var V = this.in_act;
+            var V2 = this.out_act;
+            var N = V.w.length;
+            V.dw = global.zeros(N);
+    
+            for (var i = 0; i < N; i++) {
+                var x = V.w[i];
+                var sp = Math.log(1 + Math.exp(x));
+                var tsp = Math.tanh(sp);
+                var grad_tanh_sp = 1 - Math.pow(tsp, 2);  // sech^2(sp)
+                var sigmoid_x = 1 / (1 + Math.exp(-x));
+    
+                V.dw[i] = V2.dw[i] * (tsp + x * grad_tanh_sp * sigmoid_x);
+            }
+        },
+        getParamsAndGrads: function() {
+            return [];
+        },
+        toJSON: function() {
+            var json = {};
+            json.out_depth = this.out_depth;
+            json.out_sx = this.out_sx;
+            json.out_sy = this.out_sy;
+            json.layer_type = this.layer_type;
+            return json;
+        },
+        fromJSON: function(json) {
+            this.out_depth = json.out_depth;
+            this.out_sx = json.out_sx;
+            this.out_sy = json.out_sy;
+            this.layer_type = json.layer_type;
+        }
+    }
+
+    //TODO
+  var SmishLayer = function(opt) {
+    var opt = opt || {};
+
+    this.out_sx = opt.in_sx;
+    this.out_sy = opt.in_sy;
+    this.out_depth = opt.in_depth;
+    this.layer_type = 'smish';
+  }
+  
+  SmishLayer.prototype = {
+      forward: function(V, is_training) {
+          this.in_act = V;
+          var V2 = V.clone();
+          var N = V.w.length;
+          var V2w = V2.w;
+          var Vw = V.w;
+  
+          for (var i = 0; i < N; i++) {
+              var sigmoid_x = 1 / (1 + Math.exp(-Vw[i]));
+              V2w[i] = Vw[i] * Math.tanh(sigmoid_x);
+          }
+  
+          this.out_act = V2;
+          return this.out_act;
+      },
+      backward: function() {
+          var V = this.in_act;
+          var V2 = this.out_act;
+          var N = V.w.length;
+          V.dw = global.zeros(N);
+  
+          for (var i = 0; i < N; i++) {
+              //TODO
+          }
+      },
+      getParamsAndGrads: function() {
+          return [];
+      },
+      toJSON: function() {
+          var json = {};
+          json.out_depth = this.out_depth;
+          json.out_sx = this.out_sx;
+          json.out_sy = this.out_sy;
+          json.layer_type = this.layer_type;
+          return json;
+      },
+      fromJSON: function(json) {
+          this.out_depth = json.out_depth;
+          this.out_sx = json.out_sx;
+          this.out_sy = json.out_sy;
+          this.layer_type = json.layer_type;
+      }
+  }
+
+  var SoftplusLayer = function(opt) {
+    var opt = opt || {};
+
+    this.out_sx = opt.in_sx;
+    this.out_sy = opt.in_sy;
+    this.out_depth = opt.in_depth;
+    this.layer_type = 'softplus';
+  }
+  SoftplusLayer.prototype = {
+      forward: function(V, is_training) {
+          this.in_act = V;
+          var V2 = V.clone();
+          var N = V.w.length;
+          var V2w = V2.w;
+          var Vw = V.w;
+
+          for (var i = 0; i < N; i++) {
+              V2w[i] = Math.log(1 + Math.exp(Vw[i]));
+          }
+          this.out_act = V2;
+          return this.out_act;
+      },
+      backward: function() {
+          var V = this.in_act;
+          var V2 = this.out_act;
+          var N = V.w.length;
+          V.dw = global.zeros(N);
+          for (var i = 0; i < N; i++) {
+              var x = V.w[i];
+              V.dw[i] = V2.dw[i] * (1 / (1 + Math.exp(-x))); // sigmoid 
+          }
+      },
+      getParamsAndGrads: function() {
+          return [];
+      },
+      toJSON: function() {
+          var json = {};
+          json.out_depth = this.out_depth;
+          json.out_sx = this.out_sx;
+          json.out_sy = this.out_sy;
+          json.layer_type = this.layer_type;
+          return json;
+      },
+      fromJSON: function(json) {
+          this.out_depth = json.out_depth;
+          this.out_sx = json.out_sx;
+          this.out_sy = json.out_sy;
+          this.layer_type = json.layer_type;
+      }
+  }
+
 
 
     function tanh(x) {
@@ -319,6 +604,11 @@
       }
     }
     
+    global.SoftplusLayer = SoftplusLayer;
+    global.MishLayer = MishLayer;
+    global.PiLULayer = PiLULayer;
+    global.DoubleReLULayer = DoubleReLULayer;
+    
     global.TanhLayer = TanhLayer;
     global.LeakyReluLayer = LeakyReluLayer;
     global.EluLayer = EluLayer;
@@ -361,7 +651,8 @@
                 && typeof(def.bias_pref) === 'undefined'){
               def.bias_pref = 0.0;
               if(typeof def.activation !== 'undefined' && (def.activation === 'relu' || def.activation === 'leaky_relu' 
-              || def.activation === 'elu' || def.activation === 'frelu')) {
+              || def.activation === 'elu' || def.activation === 'frelu' || def.activation === 'double_relu'
+              || def.activation === 'pilu')) {
                 def.bias_pref = 0.1;
               }
             }
@@ -375,6 +666,9 @@
               else if(def.activation==='frelu') { new_defs.push({type:'frelu'}); }
               else if(def.activation==='swish') { new_defs.push({type:'swish'}); }
               else if(def.activation==='plu') { new_defs.push({type:'plu'}); }
+              else if(def.activation==='double_relu') { new_defs.push({type:'double_relu'}); }
+              else if(def.activation==='softplus') { new_defs.push({type:'softplus'}); }
+              else if(def.activation==='pilu') { new_defs.push({type:'pilu'}); }
               else if (def.activation==='sigmoid') { new_defs.push({type:'sigmoid'}); }
               else if (def.activation==='tanh') { new_defs.push({type:'tanh'}); }
               else if (def.activation==='maxout') {
@@ -418,6 +712,9 @@
             case 'frelu': this.layers.push(new global.FReluLayer(def)); break;
             case 'swish': this.layers.push(new global.SwishLayer(def)); break;
             case 'plu': this.layers.push(new global.PLULayer(def)); break;
+            case 'double_relu': this.layers.push(new global.DoubleRELULayer(def)); break;
+            case 'softplus': this.layers.push(new global.SoftplusLayer(def)); break;
+            case 'pilu': this.layers.push(new global.PiLULayer(def)); break;
             case 'sigmoid': this.layers.push(new global.SigmoidLayer(def)); break;
             case 'tanh': this.layers.push(new global.TanhLayer(def)); break;
             case 'maxout': this.layers.push(new global.MaxoutLayer(def)); break;
@@ -494,6 +791,9 @@
           if(t==='frelu') { L = new global.FReluLayer(); }
           if(t==='swish') { L = new global.SwishLayer(); }
           if(t==='plu') { L = new global.PLULayer(); }
+          if(t==='double_relu') { L = new global.DoubleRELULayer(); }
+          if(t==='softplus') { L = new global.SoftplusLayer(); }
+          if(t==='pilu') { L = new global.PiLULayer(); }
           if(t==='sigmoid') { L = new global.SigmoidLayer(); }
           if(t==='tanh') { L = new global.TanhLayer(); }
           if(t==='dropout') { L = new global.DropoutLayer(); }
