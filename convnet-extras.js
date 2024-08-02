@@ -444,6 +444,66 @@
       }
   }
 
+  var GishLayer = function(opt) {
+    var opt = opt || {};
+  
+    this.out_sx = opt.in_sx;
+    this.out_sy = opt.in_sy;
+    this.out_depth = opt.in_depth;
+    this.layer_type = 'gish';
+  }
+  GishLayer.prototype = {
+    forward: function(V, is_training) {
+        this.in_act = V;
+        var V2 = V.clone();
+        var N = V.w.length;
+        var V2w = V2.w;
+        var Vw = V.w;
+
+        for (var i = 0; i < N; i++) {
+            V2w[i] = Vw[i] * Math.log(2 - Math.exp(-Math.exp(Vw[i])));
+        }
+
+        this.out_act = V2;
+        return this.out_act;
+    },
+    backward: function() {
+        var V = this.in_act;
+        var V2 = this.out_act;
+        var N = V.w.length;
+        V.dw = global.zeros(N);
+    
+        for (var i = 0; i < N; i++) {
+            var x = V.w[i];
+            var exp_neg_exp_x = Math.exp(-Math.exp(x));
+            var numerator = Math.exp(-Math.exp(x) + x);
+            var denominator = 2 - exp_neg_exp_x;
+    
+            var term1 = x * (numerator / denominator);
+            var term2 = Math.log(denominator);
+    
+            V.dw[i] = V2.dw[i] * (term1 + term2);
+        }
+    },
+    getParamsAndGrads: function() {
+        return [];
+    },
+    toJSON: function() {
+        var json = {};
+        json.out_depth = this.out_depth;
+        json.out_sx = this.out_sx;
+        json.out_sy = this.out_sy;
+        json.layer_type = this.layer_type;
+        return json;
+    },
+    fromJSON: function(json) {
+        this.out_depth = json.out_depth;
+        this.out_sx = json.out_sx;
+        this.out_sy = json.out_sy;
+        this.layer_type = json.layer_type;
+    }
+}
+
   //TODO
 var SmishLayer = function(opt) {
   var opt = opt || {};
@@ -499,6 +559,59 @@ SmishLayer.prototype = {
     }
 }
 
+var LogishLayer = function(opt) {
+  var opt = opt || {};
+
+  this.out_sx = opt.in_sx;
+  this.out_sy = opt.in_sy;
+  this.out_depth = opt.in_depth;
+  this.layer_type = 'logish';
+}
+LogishLayer.prototype = {
+  forward: function(V, is_training) {
+      this.in_act = V;
+      var V2 = V.clone();
+      var N = V.w.length;
+      var V2w = V2.w;
+      var Vw = V.w;
+
+      for (var i = 0; i < N; i++) {
+          var sigmoid_x = 1 / (1 + Math.exp(-Vw[i]));
+          V2w[i] = Vw[i] * Math.tanh(sigmoid_x);
+      }
+
+      this.out_act = V2;
+      return this.out_act;
+  },
+  backward: function() {
+      var V = this.in_act;
+      var V2 = this.out_act;
+      var N = V.w.length;
+      V.dw = global.zeros(N);
+
+      for (var i = 0; i < N; i++) {
+          //TODO
+      }
+  },
+  getParamsAndGrads: function() {
+      return [];
+  },
+  toJSON: function() {
+      var json = {};
+      json.out_depth = this.out_depth;
+      json.out_sx = this.out_sx;
+      json.out_sy = this.out_sy;
+      json.layer_type = this.layer_type;
+      return json;
+  },
+  fromJSON: function(json) {
+      this.out_depth = json.out_depth;
+      this.out_sx = json.out_sx;
+      this.out_sy = json.out_sy;
+      this.layer_type = json.layer_type;
+  }
+}
+
 var SoftplusLayer = function(opt) {
   var opt = opt || {};
 
@@ -550,7 +663,291 @@ SoftplusLayer.prototype = {
     }
 }
 
+function softmin(arr) {
+  const expNegArr = arr.map(x => Math.exp(-x));
+  const sumExpNegArr = expNegArr.reduce((a, b) => a + b, 0);
+  return expNegArr.map(x => x / sumExpNegArr);
+}
 
+function softminDerivative(softminVec, i, j) {
+  return softminVec[i] * ((i === j ? 1 : 0) - softminVec[j]);
+}
+
+var SoftminLayer = function(opt) {
+  var opt = opt || {};
+
+  this.out_sx = opt.in_sx;
+  this.out_sy = opt.in_sy;
+  this.out_depth = opt.in_depth;
+  this.layer_type = 'softmin';
+}
+SoftminLayer.prototype = {
+    forward: function(V, is_training) {
+        this.in_act = V;
+        var V2 = V.clone();
+        var V2w = V2.w;
+        var Vw = V.w;
+
+        V2w = softmin(Vw);
+        this.out_act = V2;
+        return this.out_act;
+    },
+    backward: function() {
+      var V = this.in_act;
+      var V2 = this.out_act;
+      var N = V.w.length;
+      V.dw = global.zeros(N);
+
+      var softminVec = softmin(V.w);
+      for (var i = 0; i < N; i++) {
+          for (var j = 0; j < N; j++) {
+              V.dw[i] += V2.dw[j] * softminDerivative(softminVec, j, i);
+          }
+      }
+  },
+    getParamsAndGrads: function() {
+        return [];
+    },
+    toJSON: function() {
+        var json = {};
+        json.out_depth = this.out_depth;
+        json.out_sx = this.out_sx;
+        json.out_sy = this.out_sy;
+        json.layer_type = this.layer_type;
+        return json;
+    },
+    fromJSON: function(json) {
+        this.out_depth = json.out_depth;
+        this.out_sx = json.out_sx;
+        this.out_sy = json.out_sy;
+        this.layer_type = json.layer_type;
+    }
+}
+
+
+
+var SoftsignLayer = function(opt) {
+  var opt = opt || {};
+
+  this.out_sx = opt.in_sx;
+  this.out_sy = opt.in_sy;
+  this.out_depth = opt.in_depth;
+  this.layer_type = 'softsign';
+}
+SoftsignLayer.prototype = {
+    forward: function(V, is_training) {
+        this.in_act = V;
+        var V2 = V.clone();
+        var N = V.w.length;
+
+        for(var i=0;i<N;i++) { 
+          V2.w[i] = V.w[i] / (1 + Math.abs(V.w[i]));
+        }
+        this.out_act = V2;
+        return this.out_act;
+    },
+    backward: function() {
+      var V = this.in_act;
+      var V2 = this.out_act;
+      var N = V.w.length;
+      V.dw = global.zeros(N);
+  
+      for (var i = 0; i < N; i++) {
+          var x = V.w[i];
+          var softsign_derivative = 1 / Math.pow(1 + Math.abs(x), 2);
+  
+          V.dw[i] = V2.dw[i] * softsign_derivative;
+      }
+   },
+    getParamsAndGrads: function() {
+        return [];
+    },
+    toJSON: function() {
+        var json = {};
+        json.out_depth = this.out_depth;
+        json.out_sx = this.out_sx;
+        json.out_sy = this.out_sy;
+        json.layer_type = this.layer_type;
+        return json;
+    },
+    fromJSON: function(json) {
+        this.out_depth = json.out_depth;
+        this.out_sx = json.out_sx;
+        this.out_sy = json.out_sy;
+        this.layer_type = json.layer_type;
+    }
+}
+
+function softshrink(x, lambda) {
+  if (x > lambda) {
+      return x - lambda;
+  }
+  return x < -lambda ? x + lambda: 0;
+}
+
+var SoftshrinkLayer = function(opt) {
+  var opt = opt || {};
+
+  this.out_sx = opt.in_sx;
+  this.out_sy = opt.in_sy;
+  this.out_depth = opt.in_depth;
+  this.lambda = opt.lambda;
+  this.layer_type = 'softshrink';
+}
+SoftshrinkLayer.prototype = {
+    forward: function(V, is_training) {
+        this.in_act = V;
+        var V2 = V.clone();
+        var N = V.w.length;
+        var V2w = V2.w;
+        var Vw = V.w;
+
+        for(var i=0;i<N;i++) { 
+          V2.w[i] = softshrink(V.w[i], this.lambda);
+        }
+        this.out_act = V2;
+        return this.out_act;
+    },
+    backward: function() {
+      var V = this.in_act;
+      var V2 = this.out_act;
+      var N = V.w.length;
+      V.dw = global.zeros(N);
+  
+      for (var i = 0; i < N; i++) {
+          var x = V.w[i];
+          V.dw[i] = V2.dw[i] * ((x > this.lambda || x < -this.lambda) ? 1 : 0);
+      }
+   },
+    getParamsAndGrads: function() {
+        return [];
+    },
+    toJSON: function() {
+        var json = {};
+        json.out_depth = this.out_depth;
+        json.out_sx = this.out_sx;
+        json.out_sy = this.out_sy;
+        json.layer_type = this.layer_type;
+        return json;
+    },
+    fromJSON: function(json) {
+        this.out_depth = json.out_depth;
+        this.out_sx = json.out_sx;
+        this.out_sy = json.out_sy;
+        this.layer_type = json.layer_type;
+    }
+}
+
+var HardshrinkLayer = function(opt) {
+  var opt = opt || {};
+
+  this.out_sx = opt.in_sx;
+  this.out_sy = opt.in_sy;
+  this.out_depth = opt.in_depth;
+  this.lambda = opt.lambda;
+  this.layer_type = 'hardshrink';
+}
+HardshrinkLayer.prototype = {
+    forward: function(V, is_training) {
+        this.in_act = V;
+        var V2 = V.clone();
+        var N = V.w.length;
+
+        for(var i=0;i<N;i++) { 
+          var x = V.w[i];
+          V2.w[i] = x * ((x > this.lambda || x < -this.lambda) ? 1 : 0);
+        }
+        this.out_act = V2;
+        return this.out_act;
+    },
+    backward: function() {
+      var V = this.in_act;
+      var V2 = this.out_act;
+      var N = V.w.length;
+      V.dw = global.zeros(N);
+  
+      for (var i = 0; i < N; i++) {
+          var x = V.w[i];
+          V.dw[i] = V2.dw[i] * ((x > this.lambda || x < -this.lambda) ? 1 : 0);
+      }
+   },
+    getParamsAndGrads: function() {
+        return [];
+    },
+    toJSON: function() {
+        var json = {};
+        json.out_depth = this.out_depth;
+        json.out_sx = this.out_sx;
+        json.out_sy = this.out_sy;
+        json.layer_type = this.layer_type;
+        return json;
+    },
+    fromJSON: function(json) {
+        this.out_depth = json.out_depth;
+        this.out_sx = json.out_sx;
+        this.out_sy = json.out_sy;
+        this.layer_type = json.layer_type;
+    }
+}
+
+function logSoftmax(x) {
+  const maxVal = Math.max(...x);
+  const expX = x.map(val => Math.exp(val - maxVal));
+  const sumExpX = expX.reduce((a, b) => a + b, 0);
+  return x.map(val => Math.log(expX[val - maxVal] / sumExpX));
+}
+
+var LogSoftmaxLayer = function(opt) {
+  var opt = opt || {};
+
+  this.out_sx = opt.in_sx;
+  this.out_sy = opt.in_sy;
+  this.out_depth = opt.in_depth;
+  this.layer_type = 'logsoftmax';
+}
+LogSoftmaxLayer.prototype = {
+    forward: function(V, is_training) {
+        this.in_act = V;
+        var V2 = V.clone();
+        var N = V.w.length;
+
+        V2.w = logSoftmax(V.w)
+        this.out_act = V2;
+        return this.out_act;
+    },
+    backward: function() {
+      var V = this.in_act; 
+      var V2 = this.out_act; 
+      var N = V.w.length;
+      V.dw = global.zeros(N);
+  
+      var expX = V.w.map(val => Math.exp(val));
+      var sumExpX = expX.reduce((a, b) => a + b, 0);
+      var softmaxValues = expX.map(val => val / sumExpX);
+  
+      for (var i = 0; i < N; i++) {
+          var grad = softmaxValues[i] - (V2.dw[i] / sumExpX);
+          V.dw[i] = grad;
+      }
+  },
+    getParamsAndGrads: function() {
+        return [];
+    },
+    toJSON: function() {
+        var json = {};
+        json.out_depth = this.out_depth;
+        json.out_sx = this.out_sx;
+        json.out_sy = this.out_sy;
+        json.layer_type = this.layer_type;
+        return json;
+    },
+    fromJSON: function(json) {
+        this.out_depth = json.out_depth;
+        this.out_sx = json.out_sx;
+        this.out_sy = json.out_sy;
+        this.layer_type = json.layer_type;
+    }
+}
 
   function tanh(x) {
     var y = Math.exp(2 * x);
@@ -605,7 +1002,12 @@ SoftplusLayer.prototype = {
   }
   
   global.SoftplusLayer = SoftplusLayer;
+  global.SoftminLayer = SoftminLayer;
+  global.SoftsignLayer = SoftsignLayer;
+  global.SoftshrinkLayer = SoftshrinkLayer;
+  global.HardshrinkLayer = HardshrinkLayer;
   global.MishLayer = MishLayer;
+  global.GishLayer = GishLayer;
   global.PiLULayer = PiLULayer;
   global.DoubleReLULayer = DoubleReLULayer;
   
@@ -614,6 +1016,7 @@ SoftplusLayer.prototype = {
   global.EluLayer = EluLayer;
   global.FReluLayer = FReluLayer;
   global.SwishLayer = SwishLayer;
+  global.LogishLayer = LogishLayer;
   global.PLULayer = PLULayer;
 
 })(convnetjs);
@@ -640,7 +1043,7 @@ SoftplusLayer.prototype = {
         for(var i=0;i<defs.length;i++) {
           var def = defs[i];
           
-          if(def.type==='softmax' || def.type==='svm') {
+          if(def.type==='logsoftmax' || def.type==='softmax' || def.type==='svm') {
             new_defs.push({type:'fc', num_neurons: def.num_classes});
           }
           if(def.type==='regression') {
@@ -665,9 +1068,15 @@ SoftplusLayer.prototype = {
             else if(def.activation==='elu') { new_defs.push({type:'elu'}); }
             else if(def.activation==='frelu') { new_defs.push({type:'frelu'}); }
             else if(def.activation==='swish') { new_defs.push({type:'swish'}); }
+            else if(def.activation==='gish') { new_defs.push({type:'gish'}); }
+            else if(def.activation==='logish') { new_defs.push({type:'logish'}); }
             else if(def.activation==='plu') { new_defs.push({type:'plu'}); }
             else if(def.activation==='double_relu') { new_defs.push({type:'double_relu'}); }
             else if(def.activation==='softplus') { new_defs.push({type:'softplus'}); }
+            else if(def.activation==='softmin') { new_defs.push({type:'softmin'}); }
+            else if(def.activation==='softsign') { new_defs.push({type:'softsign'}); }
+            else if(def.activation==='softshrink') { new_defs.push({type:'softshrink'}); }
+            else if(def.activation==='hardshrink') { new_defs.push({type:'hardshrink'}); }
             else if(def.activation==='pilu') { new_defs.push({type:'pilu'}); }
             else if (def.activation==='sigmoid') { new_defs.push({type:'sigmoid'}); }
             else if (def.activation==='tanh') { new_defs.push({type:'tanh'}); }
@@ -703,6 +1112,11 @@ SoftplusLayer.prototype = {
           case 'dropout': this.layers.push(new global.DropoutLayer(def)); break;
           case 'input': this.layers.push(new global.InputLayer(def)); break;
           case 'softmax': this.layers.push(new global.SoftmaxLayer(def)); break;
+          case 'logsoftmax': this.layers.push(new global.LogSoftmaxLayer(def)); break;
+          case 'softmin': this.layers.push(new global.SoftminLayer(def)); break;
+          case 'softsign': this.layers.push(new global.SoftsignLayer(def)); break;
+          case 'softshrink': this.layers.push(new global.SoftshrinkLayer(def)); break;
+          case 'hardshrink': this.layers.push(new global.HardshrinkLayer(def)); break;
           case 'regression': this.layers.push(new global.RegressionLayer(def)); break;
           case 'conv': this.layers.push(new global.ConvLayer(def)); break;
           case 'pool': this.layers.push(new global.PoolLayer(def)); break;
@@ -711,6 +1125,8 @@ SoftplusLayer.prototype = {
           case 'elu': this.layers.push(new global.EluLayer(def)); break;
           case 'frelu': this.layers.push(new global.FReluLayer(def)); break;
           case 'swish': this.layers.push(new global.SwishLayer(def)); break;
+          case 'gish': this.layers.push(new global.GishLayer(def)); break;
+          case 'logish': this.layers.push(new global.LogishLayer(def)); break;
           case 'plu': this.layers.push(new global.PLULayer(def)); break;
           case 'double_relu': this.layers.push(new global.DoubleRELULayer(def)); break;
           case 'softplus': this.layers.push(new global.SoftplusLayer(def)); break;
@@ -790,9 +1206,15 @@ SoftplusLayer.prototype = {
         if(t==='elu') { L = new global.EluLayer(); }
         if(t==='frelu') { L = new global.FReluLayer(); }
         if(t==='swish') { L = new global.SwishLayer(); }
+        if(t==='gish') { L = new global.GishLayer(); }
+        if(t==='logish') { L = new global.LogishLayer(); }
         if(t==='plu') { L = new global.PLULayer(); }
         if(t==='double_relu') { L = new global.DoubleRELULayer(); }
         if(t==='softplus') { L = new global.SoftplusLayer(); }
+        if(t==='softmin') { L = new global.SoftminLayer(); }
+        if(t==='softsign') { L = new global.SoftsignLayer(); }
+        if(t==='softshrink') { L = new global.SoftshrinkLayer(); }
+        if(t==='hardshrink') { L = new global.HardshrinkLayer(); }
         if(t==='pilu') { L = new global.PiLULayer(); }
         if(t==='sigmoid') { L = new global.SigmoidLayer(); }
         if(t==='tanh') { L = new global.TanhLayer(); }
@@ -801,6 +1223,7 @@ SoftplusLayer.prototype = {
         if(t==='pool') { L = new global.PoolLayer(); }
         if(t==='lrn') { L = new global.LocalResponseNormalizationLayer(); }
         if(t==='softmax') { L = new global.SoftmaxLayer(); }
+        if(t==='logsoftmax') { L = new global.LogSoftmaxLayer(); }
         if(t==='regression') { L = new global.RegressionLayer(); }
         if(t==='fc') { L = new global.FullyConnLayer(); }
         if(t==='maxout') { L = new global.MaxoutLayer(); }

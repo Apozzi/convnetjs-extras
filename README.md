@@ -5,12 +5,18 @@ An implementation of additional functionalities for Convnetjs, including various
 - LeakyRELU
 - ELU
 - FReLU
-- Swish
 - PLU
 - PiLU
 - DoubleReLU
+- Swish
 - Mish
+- Gish
+- Logish
 - Softplus
+- Softmin
+- Softsign
+- Softshrink
+- Hardshrink
 
 ## How to Use Convnetjs-Extras?
 
@@ -45,23 +51,35 @@ DoubleReLU is an activation function composed of two rectified linear units (ReL
 ### Mish
 Mish is a self-regularized activation function that smoothly interpolates between the linear and nonlinear regimes. It has shown promising results in various deep learning tasks, often outperforming traditional activation functions like ReLU.
 
+### Gish
+Gish is a novel activation function that combines exponential and logarithmic transformations to provide robust non-linearity. It has demonstrated strong performance in deep learning models by effectively handling negative inputs and providing smooth gradients, which can enhance training stability and model performance.
+
 ### Softplus
 Softplus is a smooth and continuous activation function defined as the logarithm of the exponential of the input plus one. It has the advantage of being differentiable everywhere, which allows for stable gradients during training.
+
+### Logish
+Logish is an activation function that blends the properties of the logarithmic function with the sigmoid function. This function is designed to offer a balance between non-linearity and stability, potentially improving convergence and performance in various neural network architectures.
+
+### Softmin
+Softmin is an activation function that applies the softmin operation to its inputs, effectively transforming them into a probability distribution where smaller values are amplified. It is particularly useful for tasks where the goal is to emphasize smaller input values.
+
+### Softsign
+Softsign is a smooth and differentiable activation function that approximates the sign function with a soft transition. This function provides a continuous approximation of the sign function, helping to mitigate the problem of vanishing gradients and improving the learning dynamics in neural networks.
+
+### Softshrink
+Softshrink is a thresholding activation function that introduces sparsity by shrinking values towards zero. This function is useful for regularization and feature selection, as it helps to reduce the impact of small values and promote sparsity in the activations.
+
+### Hardshrink
+Hardshrink is a simple threshold-based activation function that sets values within a specific range to zero. This function is effective in scenarios where you want to introduce sparsity and handle outliers by zeroing out values within a certain range.
 
 ## TODO
 
 Some activation functions/loss functions that can be added in the future:
 
-- Gish
 - Smish
-- Logish
 - GeLU
 - PReLU
 - RReLU
-- Softmin
-- Softsign
-- Softshrink
-- Hardshrink
 - LogSoftmax
 
 
