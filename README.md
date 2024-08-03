@@ -31,10 +31,12 @@ Simply add the convnetjs-extras scripts along with the convnetjs library.
 Leaky Rectified Linear Unit (LeakyRELU) is an activation function that allows a small, non-zero gradient when the unit is not active, which helps to keep the information flowing through the network during training.
 
 **Definition**: The Leaky Rectified Linear Unit (LeakyRELU) activation function is defined as:
+
 $$f(x) = \begin{cases} 
 x & \text{if } x > 0 \\
 \alpha x & \text{if } x \leq 0 
 \end{cases}$$
+
 where $\alpha$ is a small constant (by default 0.01) that determines the slope of the function for negative inputs.
 
 
