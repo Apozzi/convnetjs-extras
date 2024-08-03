@@ -103,13 +103,14 @@ $$
 f(x) = x \cdot \sigma(x)
 $$
 
-where $\sigma(x)$ is the sigmoid function.
 
 **Derivative:**
 
 $$
 f'(x) = \sigma(x) + x \cdot \sigma(x) \cdot (1 - \sigma(x))
 $$
+
+where $\sigma(x)$ is the sigmoid function.
 
 ### PLU
 Piecewise Linear Unit (PLU) is an activation function that allows for multiple linear segments, which can help in capturing complex patterns in the data.
