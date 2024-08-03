@@ -59,7 +59,7 @@ Exponential Linear Unit (ELU) is an activation function that tends to converge c
 $$
 f(x) = \begin{cases} 
 x & \text{if } x > 0 \\
-\alpha (\exp(x) - 1) & \text{if } x \leq 0 
+\alpha (e^x - 1) & \text{if } x \leq 0 
 \end{cases}
 $$
 
@@ -68,7 +68,7 @@ $$
 $$
 f'(x) = \begin{cases} 
 1 & \text{if } x > 0 \\
-\alpha \exp(x) & \text{if } x \leq 0 
+\alpha e^x & \text{if } x \leq 0 
 \end{cases}
 $$
 
@@ -244,7 +244,7 @@ Softmin is an activation function that applies the softmin operation to its inpu
 **Definition**: The Softmin activation function is defined as:
 
 $$
-f(x_i) = \frac{\exp(-x_i)}{\sum_{j} \exp(-x_j)}
+f(x_i) = \frac{e^{-x_i}}{\sum_{j} e^{-x_j}}
 $$
 
 **Derivative:**
