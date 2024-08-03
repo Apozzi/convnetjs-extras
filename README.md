@@ -44,12 +44,14 @@ where $\alpha$ is a small constant (by default 0.01) that determines the slope o
 Exponential Linear Unit (ELU) is an activation function that tends to converge cost to zero faster and produce more accurate results. It adds a smooth transition to negative inputs, reducing the vanishing gradient problem.
 
 **Definition**: The Exponential Linear Unit (ELU) activation function is defined as:
+
 $$
 f(x) = \begin{cases} 
 x & \text{if } x > 0 \\
 \alpha (\exp(x) - 1) & \text{if } x \leq 0 
 \end{cases}
 $$
+
 where $\alpha$ is a hyperparameter that controls the value to which the function asymptotically approaches for negative inputs.
 
 
