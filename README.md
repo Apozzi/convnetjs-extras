@@ -39,6 +39,15 @@ x & \text{if } x > 0 \\
 \end{cases}
 $$
 
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+1 & \text{if } x > 0 \\
+\alpha & \text{if } x \leq 0 
+\end{cases}
+$$
+
 where $\alpha$ is a small constant (by default 0.01) that determines the slope of the function for negative inputs.
 
 
@@ -54,6 +63,15 @@ x & \text{if } x > 0 \\
 \end{cases}
 $$
 
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+1 & \text{if } x > 0 \\
+\alpha \exp(x) & \text{if } x \leq 0 
+\end{cases}
+$$
+
 where $\alpha$ is a hyperparameter that controls the value to which the function asymptotically approaches for negative inputs.
 
 
@@ -64,6 +82,15 @@ Flexible Rectified Linear Units (FReLU) is a variant of the ReLU activation func
 
 $$
 f(x) = \text{ReLU}(x) + b
+$$
+
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+1 & \text{if } x > 0 \\
+0 & \text{if } x \leq 0 
+\end{cases}
 $$
 
 
@@ -78,6 +105,12 @@ $$
 
 where $\sigma(x)$ is the sigmoid function.
 
+**Derivative:**
+
+$$
+f'(x) = \sigma(x) + x \cdot \sigma(x) \cdot (1 - \sigma(x))
+$$
+
 ### PLU
 Piecewise Linear Unit (PLU) is an activation function that allows for multiple linear segments, which can help in capturing complex patterns in the data.
 
@@ -85,6 +118,16 @@ Piecewise Linear Unit (PLU) is an activation function that allows for multiple l
 
 $$
 f(x) = \max(\alpha (x + c) - c, \min(\alpha (x - c) + c, x))
+$$
+
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+\alpha & \text{if } x < -c \\
+1 & \text{if } -c \leq x \leq c \\
+\alpha & \text{if } x > c 
+\end{cases}
 $$
 
 ### PiLU
@@ -96,6 +139,15 @@ $$
 f(x) = \begin{cases} 
 \alpha x + \gamma (1 - \alpha), & x > \gamma \\
 \beta x + \gamma (1 - \beta), & x \leq \gamma 
+\end{cases}
+$$
+
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+\alpha & \text{if } x > \gamma \\
+\beta & \text{if } x \leq \gamma 
 \end{cases}
 $$
 
@@ -112,6 +164,15 @@ x + \alpha, & x < -\alpha
 \end{cases}
 $$
 
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+1 & \text{if } x > \alpha \text{ or } x < -\alpha \\
+0 & \text{if } -\alpha \leq x \leq \alpha 
+\end{cases}
+$$
+
 ### Mish
 Mish is a self-regularized activation function that smoothly interpolates between the linear and nonlinear regimes. It has shown promising results in various deep learning tasks, often outperforming traditional activation functions like ReLU.
 
@@ -119,6 +180,12 @@ Mish is a self-regularized activation function that smoothly interpolates betwee
 
 $$
 f(x) = x \cdot \tanh(\text{softplus}(x))
+$$
+
+**Derivative:**
+
+$$
+f'(x) = \tanh(\text{softplus}(x)) + x \cdot \text{sech}^2(\text{softplus}(x)) \cdot \sigma(x)
 $$
 
 ### Gish
@@ -130,6 +197,12 @@ $$
 f(x) = x \cdot \ln\left(2 - e^{-e^x}\right)
 $$
 
+**Derivative:**
+
+$$
+f'(x) = \ln\left(2 - e^{-e^x}\right) + x \cdot \frac{e^x \cdot e^{-e^x}}{2 - e^{-e^x}}
+$$
+
 ### Softplus
 Softplus is a smooth and continuous activation function defined as the logarithm of the exponential of the input plus one. It has the advantage of being differentiable everywhere, which allows for stable gradients during training.
 
@@ -137,6 +210,12 @@ Softplus is a smooth and continuous activation function defined as the logarithm
 
 $$
 f(x) = \ln(1 + \exp(x))
+$$
+
+**Derivative:**
+
+$$
+f'(x) = \sigma(x)
 $$
 
 
@@ -151,6 +230,12 @@ $$
 
 where $\sigma(x)$ is the sigmoid function.
 
+**Derivative:**
+
+$$
+f'(x) = \ln\left(1 + \sigma(x)\right) + x \cdot \frac{\sigma(x) \cdot (1 - \sigma(x))}{1 + \sigma(x)}
+$$
+
 
 ### Softmin
 Softmin is an activation function that applies the softmin operation to its inputs, effectively transforming them into a probability distribution where smaller values are amplified. It is particularly useful for tasks where the goal is to emphasize smaller input values.
@@ -161,6 +246,15 @@ $$
 f(x_i) = \frac{\exp(-x_i)}{\sum_{j} \exp(-x_j)}
 $$
 
+**Derivative:**
+
+$$
+\frac{\partial f(x_i)}{\partial x_j} = \begin{cases}
+f(x_i) \cdot (1 - f(x_i)) & \text{if } i = j \\
+-f(x_i) \cdot f(x_j) & \text{if } i \neq j
+\end{cases}
+$$
+
 ### Softsign
 Softsign is a smooth and differentiable activation function that approximates the sign function with a soft transition. This function provides a continuous approximation of the sign function, helping to mitigate the problem of vanishing gradients and improving the learning dynamics in neural networks.
 
@@ -168,6 +262,12 @@ Softsign is a smooth and differentiable activation function that approximates th
 
 $$
 f(x) = \frac{x}{1 + |x|}
+$$
+
+**Derivative:**
+
+$$
+f'(x) = \frac{1}{(1 + |x|)^2}
 $$
 
 ### Softshrink
@@ -183,6 +283,15 @@ x + \lambda, & \text{if } x < -\lambda \\
 \end{cases}
 $$
 
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+1, & \text{if } |x| > \lambda \\
+0, & \text{otherwise}
+\end{cases}
+$$
+
 ### Hardshrink
 Hardshrink is a simple threshold-based activation function that sets values within a specific range to zero. This function is effective in scenarios where you want to introduce sparsity and handle outliers by zeroing out values within a certain range.
 
@@ -192,6 +301,15 @@ $$
 f(x) = \begin{cases} 
 x, & \text{if } |x| > \lambda \\
 0, & \text{otherwise } 
+\end{cases}
+$$
+
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+1, & \text{if } |x| > \lambda \\
+0, & \text{otherwise}
 \end{cases}
 $$
 
