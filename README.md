@@ -30,47 +30,151 @@ Simply add the convnetjs-extras scripts along with the convnetjs library.
 ### LeakyRELU
 Leaky Rectified Linear Unit (LeakyRELU) is an activation function that allows a small, non-zero gradient when the unit is not active, which helps to keep the information flowing through the network during training.
 
+**Definition**: The Leaky Rectified Linear Unit (LeakyRELU) activation function is defined as:
+$$
+f(x) = \begin{cases} 
+x & \text{if } x > 0 \\
+\alpha x & \text{if } x \leq 0 
+\end{cases}
+$$
+where $\alpha$ is a small constant (by default 0.01) that determines the slope of the function for negative inputs.
+
+
 ### ELU
 Exponential Linear Unit (ELU) is an activation function that tends to converge cost to zero faster and produce more accurate results. It adds a smooth transition to negative inputs, reducing the vanishing gradient problem.
 
+**Definition**: The Exponential Linear Unit (ELU) activation function is defined as:
+$$
+f(x) = \begin{cases} 
+x & \text{if } x > 0 \\
+\alpha (\exp(x) - 1) & \text{if } x \leq 0 
+\end{cases}
+$$
+where $\alpha$ is a hyperparameter that controls the value to which the function asymptotically approaches for negative inputs.
+
+
 ### FReLU
-Fixed Rectified Linear Unit (FReLU) is a variant of the ReLU activation function that includes a fixed parameter for the threshold, adding flexibility to the learning process.
+Flexible Rectified Linear Units (FReLU) is a variant of the ReLU activation function that includes a fixed parameter for the threshold, adding flexibility to the learning process.
+
+**Definition**: The Fixed Rectified Linear Unit (FReLU) activation function is defined as:
+$$
+f(x) = \text{ReLU}(x) + b
+$$
+
 
 ### Swish/SiLU
 Swish is a smooth, non-monotonic activation function that tends to perform better than ReLU on deeper models. It is defined as the product of the input and its sigmoid function.
 
+**Definition**: The Swish (or Sigmoid Linear Unit, SiLU) activation function is defined as:
+$$
+f(x) = x \cdot \sigma(x)
+$$
+where $\sigma(x)$ is the sigmoid function.
+
 ### PLU
 Piecewise Linear Unit (PLU) is an activation function that allows for multiple linear segments, which can help in capturing complex patterns in the data.
+
+**Definition**: The Piecewise Linear Unit (PLU) activation function is defined as:
+$$
+f(x) = \max(\alpha (x + c) - c, \min(\alpha (x - c) + c, x))
+$$
 
 ### PiLU
 Piecewise Linear Unit (PiLU) is an activation function that introduces two linear segments with different slopes, creating a piecewise linear transition. It enhances the representational capacity of the network by allowing for more flexible and diverse transformations of the input data.
 
+**Definition**: The Piecewise Linear Unit (PiLU) activation function is defined as:
+$$
+f(x) = \begin{cases} 
+\alpha x + \gamma (1 - \alpha), & x > \gamma \\
+\beta x + \gamma (1 - \beta), & x \leq \gamma 
+\end{cases}
+$$
+
 ### DoubleReLU
 DoubleReLU is an activation function composed of two rectified linear units (ReLU) applied sequentially. It provides a simple yet effective way to introduce non-linearity into the network while maintaining computational efficiency. The double application of ReLU allows for a more pronounced transformation of the input data, potentially capturing more complex patterns in the data.
+
+**Definition**: The Double Rectified Linear Unit (DoubleReLU) activation function is defined as:
+$$
+f(x) = \begin{cases} 
+x - \alpha, & x > \alpha \\
+0, & -\alpha \leq x \leq \alpha \\
+x + \alpha, & x < -\alpha 
+\end{cases}
+$$
 
 ### Mish
 Mish is a self-regularized activation function that smoothly interpolates between the linear and nonlinear regimes. It has shown promising results in various deep learning tasks, often outperforming traditional activation functions like ReLU.
 
+**Definition**: The Mish activation function is defined as:
+$$
+f(x) = x \cdot \tanh(\text{softplus}(x))
+$$
+
 ### Gish
 Gish is a novel activation function that combines exponential and logarithmic transformations to provide robust non-linearity. It has demonstrated strong performance in deep learning models by effectively handling negative inputs and providing smooth gradients, which can enhance training stability and model performance.
+
+**Definition**: The Gish activation function is defined as:
+$$
+f(x) = x \cdot \ln\left(2 - e^{-e^x}\right)
+$$
 
 ### Softplus
 Softplus is a smooth and continuous activation function defined as the logarithm of the exponential of the input plus one. It has the advantage of being differentiable everywhere, which allows for stable gradients during training.
 
+**Definition**: The Softplus activation function is defined as:
+$$
+f(x) = \ln(1 + \exp(x))
+$$
+
+
 ### Logish
 Logish is an activation function that blends the properties of the logarithmic function with the sigmoid function. This function is designed to offer a balance between non-linearity and stability, potentially improving convergence and performance in various neural network architectures.
+
+**Definition**: The Logish activation function is defined as:
+$$
+f(x) = x \cdot \ln\left(1 + \sigma(x)\right)
+$$
+where $\sigma(x)$ is the sigmoid function.
+
 
 ### Softmin
 Softmin is an activation function that applies the softmin operation to its inputs, effectively transforming them into a probability distribution where smaller values are amplified. It is particularly useful for tasks where the goal is to emphasize smaller input values.
 
+**Definition**: The Softmin activation function is defined as:
+$$
+f(x_i) = \frac{\exp(-x_i)}{\sum_{j} \exp(-x_j)}
+$$
+
 ### Softsign
 Softsign is a smooth and differentiable activation function that approximates the sign function with a soft transition. This function provides a continuous approximation of the sign function, helping to mitigate the problem of vanishing gradients and improving the learning dynamics in neural networks.
+
+**Definition**: The Softsign activation function is defined as:
+$$
+f(x) = \frac{x}{1 + |x|}
+$$
 
 ### Softshrink
 Softshrink is a thresholding activation function that introduces sparsity by shrinking values towards zero. This function is useful for regularization and feature selection, as it helps to reduce the impact of small values and promote sparsity in the activations.
 
+**Definition**: The Softshrink activation function is defined as:
+$$
+f(x) = \begin{cases} 
+x - \lambda, & \text{if } x > \lambda \\
+x + \lambda, & \text{if } x < -\lambda \\
+0, & \text{otherwise}
+\end{cases}
+$$
+
 ### Hardshrink
 Hardshrink is a simple threshold-based activation function that sets values within a specific range to zero. This function is effective in scenarios where you want to introduce sparsity and handle outliers by zeroing out values within a certain range.
+
+**Definition**: The Hardshrink activation function is defined as:
+$$
+f(x) = \begin{cases} 
+x, & \text{if } |x| > \lambda \\
+0, & \text{otherwise } 
+\end{cases}
+$$
 
 ## TODO
 
