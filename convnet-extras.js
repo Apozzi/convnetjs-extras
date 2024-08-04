@@ -444,6 +444,71 @@
       }
   }
 
+  var RReluLayer = function(opt) {
+    var opt = opt || {};
+
+    this.out_sx = opt.in_sx;
+    this.out_sy = opt.in_sy;
+    this.out_depth = opt.in_depth;
+    this.lower = opt.lower || 0.01;
+    this.upper = opt.upper || 0.1; 
+    this.layer_type = 'rrelu';
+    this.alpha = null;
+}
+
+RReluLayer.prototype = {
+    forward: function(V, is_training) {
+        this.in_act = V;
+        var V2 = V.clone();
+        var N = V.w.length;
+
+        if (is_training) {
+            this.alpha = Math.random() * (this.upper - this.lower) + this.lower;
+        } else {
+            this.alpha = (this.upper + this.lower) / 2; 
+        }
+
+        for (var i = 0; i < N; i++) { 
+            var x = V.w[i];
+            V2.w[i] = x > 0 ? x : this.alpha * x;
+        }
+        this.out_act = V2;
+        return this.out_act;
+    },
+    backward: function() {
+        var V = this.in_act;
+        var V2 = this.out_act;
+        var N = V.w.length;
+        V.dw = global.zeros(N);
+    
+        for (var i = 0; i < N; i++) {
+            var x = V.w[i];
+            V.dw[i] = V2.dw[i] * (x > 0 ? 1 : this.alpha);
+        }
+    },
+    getParamsAndGrads: function() {
+        return [];
+    },
+    toJSON: function() {
+        var json = {};
+        json.out_depth = this.out_depth;
+        json.out_sx = this.out_sx;
+        json.out_sy = this.out_sy;
+        json.layer_type = this.layer_type;
+        json.lower = this.lower;
+        json.upper = this.upper;
+        return json;
+    },
+    fromJSON: function(json) {
+        this.out_depth = json.out_depth;
+        this.out_sx = json.out_sx;
+        this.out_sy = json.out_sy;
+        this.layer_type = json.layer_type;
+        this.lower = json.lower;
+        this.upper = json.upper;
+    }
+}
+
   var GishLayer = function(opt) {
     var opt = opt || {};
   
@@ -838,6 +903,116 @@ SoftshrinkLayer.prototype = {
     }
 }
 
+var GeluLayer = function(opt) {
+  var opt = opt || {};
+
+  this.out_sx = opt.in_sx;
+  this.out_sy = opt.in_sy;
+  this.out_depth = opt.in_depth;
+  this.layer_type = 'gelu';
+}
+
+var PReluLayer = function(opt) {
+  var opt = opt || {};
+  
+  this.out_sx = opt.in_sx;
+  this.out_sy = opt.in_sy;
+  this.out_depth = opt.in_depth;
+  this.alpha = opt.alpha || 0.01; // Valor inicial de alpha
+  this.layer_type = 'prelu';
+}
+
+PReluLayer.prototype = {
+  forward: function(V, is_training) {
+      this.in_act = V;
+      var V2 = V.clone();
+      var N = V.w.length;
+
+      for(var i = 0; i < N; i++) { 
+        var x = V.w[i];
+        V2.w[i] = x > 0 ? x : this.alpha * x;
+      }
+      this.out_act = V2;
+      return this.out_act;
+  },
+  backward: function() {
+    var V = this.in_act;
+    var V2 = this.out_act;
+    var N = V.w.length;
+    V.dw = global.zeros(N);
+
+    for (var i = 0; i < N; i++) {
+        var x = V.w[i];
+        V.dw[i] = V2.dw[i] * (x > 0 ? 1 : this.alpha);
+    }
+  },
+  getParamsAndGrads: function() {
+      return [];
+  },
+  toJSON: function() {
+      var json = {};
+      json.out_depth = this.out_depth;
+      json.out_sx = this.out_sx;
+      json.out_sy = this.out_sy;
+      json.alpha = this.alpha;
+      json.layer_type = this.layer_type;
+      return json;
+  },
+  fromJSON: function(json) {
+      this.out_depth = json.out_depth;
+      this.out_sx = json.out_sx;
+      this.out_sy = json.out_sy;
+      this.alpha = json.alpha;
+      this.layer_type = json.layer_type;
+  }
+}
+
+GeluLayer.prototype = {
+    forward: function(V, is_training) {
+        this.in_act = V;
+        var V2 = V.clone();
+        var N = V.w.length;
+
+        for(var i = 0; i < N; i++) { 
+          var x = V.w[i];
+          V2.w[i] = 0.5 * x * (1 + Math.erf(x / Math.sqrt(2)));
+        }
+        this.out_act = V2;
+        return this.out_act;
+    },
+    backward: function() {
+      var V = this.in_act;
+      var V2 = this.out_act;
+      var N = V.w.length;
+      V.dw = global.zeros(N);
+
+      const phi = (x) => Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+      const Phi = (x) => 0.5 * (1 + Math.erf(x / Math.sqrt(2)));
+  
+      for (var i = 0; i < N; i++) {
+          var x = V.w[i];
+          V.dw[i] = V2.dw[i] * (Phi(x) + x * phi(x));
+      }
+    },
+    getParamsAndGrads: function() {
+        return [];
+    },
+    toJSON: function() {
+        var json = {};
+        json.out_depth = this.out_depth;
+        json.out_sx = this.out_sx;
+        json.out_sy = this.out_sy;
+        json.layer_type = this.layer_type;
+        return json;
+    },
+    fromJSON: function(json) {
+        this.out_depth = json.out_depth;
+        this.out_sx = json.out_sx;
+        this.out_sy = json.out_sy;
+        this.layer_type = json.layer_type;
+    }
+}
+
 var HardshrinkLayer = function(opt) {
   var opt = opt || {};
 
@@ -1010,6 +1185,9 @@ LogSoftmaxLayer.prototype = {
   global.GishLayer = GishLayer;
   global.PiLULayer = PiLULayer;
   global.DoubleReLULayer = DoubleReLULayer;
+  global.GeluLayer = GeluLayer;
+  global.PReluLayer = PReluLayer;
+  global.RReluLayer = RReluLayer;
   
   global.TanhLayer = TanhLayer;
   global.LeakyReluLayer = LeakyReluLayer;
@@ -1055,7 +1233,7 @@ LogSoftmaxLayer.prototype = {
           if((def.type==='fc' || def.type==='conv') 
               && typeof(def.bias_pref) === 'undefined'){
             def.bias_pref = 0.0;
-            if(typeof def.activation !== 'undefined' && (def.activation === 'relu' || def.activation === 'leaky_relu' 
+            if(typeof def.activation !== 'undefined' && (def.activation === 'rrelu' ||  def.activation === 'prelu' ||  def.activation === 'gelu' ||  def.activation === 'relu' || def.activation === 'leaky_relu' 
             || def.activation === 'elu' || def.activation === 'frelu' || def.activation === 'double_relu'
             || def.activation === 'pilu')) {
               def.bias_pref = 0.1;
@@ -1069,6 +1247,9 @@ LogSoftmaxLayer.prototype = {
             else if(def.activation==='leaky_relu') { new_defs.push({type:'leaky_relu'}); }
             else if(def.activation==='elu') { new_defs.push({type:'elu'}); }
             else if(def.activation==='frelu') { new_defs.push({type:'frelu'}); }
+            else if(def.activation==='gelu') { new_defs.push({type:'gelu'}); }
+            else if(def.activation==='prelu') { new_defs.push({type:'prelu'}); }
+            else if(def.activation==='rrelu') { new_defs.push({type:'rrelu'}); }
             else if(def.activation==='swish') { new_defs.push({type:'swish'}); }
             else if(def.activation==='gish') { new_defs.push({type:'gish'}); }
             else if(def.activation==='logish') { new_defs.push({type:'logish'}); }
@@ -1123,6 +1304,9 @@ LogSoftmaxLayer.prototype = {
           case 'conv': this.layers.push(new global.ConvLayer(def)); break;
           case 'pool': this.layers.push(new global.PoolLayer(def)); break;
           case 'relu': this.layers.push(new global.ReluLayer(def)); break;
+          case 'gelu': this.layers.push(new global.GeluLayer(def)); break;
+          case 'rrelu': this.layers.push(new global.RReluLayer(def)); break;
+          case 'prelu': this.layers.push(new global.PReluLayerr(def)); break;
           case 'leaky_relu': this.layers.push(new global.LeakyReluLayer(def)); break;
           case 'elu': this.layers.push(new global.EluLayer(def)); break;
           case 'frelu': this.layers.push(new global.FReluLayer(def)); break;
@@ -1207,6 +1391,9 @@ LogSoftmaxLayer.prototype = {
         if(t==='leaky-relu') { L = new global.LeakyReluLayer(); }
         if(t==='elu') { L = new global.EluLayer(); }
         if(t==='frelu') { L = new global.FReluLayer(); }
+        if(t==='gelu') { L = new global.GeluLayer(); }
+        if(t==='prelu') { L = new global.PReluLayer(); }
+        if(t==='rrelu') { L = new global.RReluLayer(); }
         if(t==='swish') { L = new global.SwishLayer(); }
         if(t==='gish') { L = new global.GishLayer(); }
         if(t==='logish') { L = new global.LogishLayer(); }

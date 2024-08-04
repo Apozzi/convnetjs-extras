@@ -5,6 +5,9 @@ An implementation of additional functionalities for Convnetjs, including various
 - LeakyRELU
 - ELU
 - FReLU
+- GeLU
+- PReLU
+- RReLU
 - PLU
 - PiLU
 - DoubleReLU
@@ -406,14 +409,92 @@ $$
 layer_defs.push({type:'hardshrink', num_classes:10, lambda: 0.5});
 ```
 
+### GeLU
+Gaussian Error Linear Unit (GeLU) is an activation function that applies a smooth curve to the input values, offering a balance between linearity and non-linearity. It has shown superior performance in various neural network architectures, particularly in natural language processing tasks.
+
+**Definition**: The Gaussian Error Linear Unit (GeLU) activation function is defined as:
+
+$$
+f(x) = x \cdot \Phi(x) = x \cdot \frac{1}{2} \left(1 + \text{erf}\left(\frac{x}{\sqrt{2}}\right)\right)
+$$
+
+**Derivative:**
+
+$$
+f'(x) = \Phi(x) + x \cdot \phi(x)
+$$
+
+where $\Phi(x)$ is the cumulative distribution function of the standard normal distribution, and $\phi(x)$ is the probability density function of the standard normal distribution.
+
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'gelu'}); 
+```
+
+
+### PReLU
+Parametric Rectified Linear Unit (PReLU) is an activation function that introduces learnable parameters for the negative slope. It allows the model to adapt the negative part of the function during training, which can improve the model's capacity and performance.
+
+**Definition**: The Parametric Rectified Linear Unit (PReLU) activation function is defined as:
+
+$$
+f(x) = \begin{cases} 
+x & \text{if } x > 0 \\
+\alpha x & \text{if } x \leq 0 
+\end{cases}
+$$
+
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+1 & \text{if } x > 0 \\
+\alpha & \text{if } x \leq 0 
+\end{cases}
+$$
+
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'prelu', alpha: 0.01}); 
+```
+
+
+### RReLU
+Randomized Leaky Rectified Linear Unit (RReLU) is an activation function that introduces randomness to the negative slope during training, which can act as a form of regularization and help prevent overfitting. The slope is chosen from a uniform distribution within a given range.
+
+**Definition**: The Randomized Leaky Rectified Linear Unit (RReLU) activation function is defined as:
+
+$$
+f(x) = \begin{cases} 
+x & \text{if } x > 0 \\
+\alpha x & \text{if } x \leq 0 
+\end{cases}
+$$
+
+where $\alpha$ is a random variable sampled from a uniform distribution $\alpha \sim \text{Uniform}(l, u)$ during training, and fixed during inference.
+
+**Derivative:**
+
+$$
+f'(x) = \begin{cases} 
+1 & \text{if } x > 0 \\
+\alpha & \text{if } x \leq 0 
+\end{cases}
+$$
+
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'rrelu', lower: 0.01, upper: 0.1}); 
+```
+
 ## TODO
 
 Some activation functions/loss functions that can be added in the future:
 
 - Smish
-- GeLU
-- PReLU
-- RReLU
 - LogSoftmax
 
 
