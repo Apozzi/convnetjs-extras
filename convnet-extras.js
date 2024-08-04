@@ -1043,7 +1043,9 @@ LogSoftmaxLayer.prototype = {
         for(var i=0;i<defs.length;i++) {
           var def = defs[i];
           
-          if(def.type==='logsoftmax' || def.type==='softmax' || def.type==='svm') {
+          if(def.type==='hardshrink' ||
+            def.type==='softmin' || def.type==='softsign' || def.type==='softshrink' ||
+            def.type==='softplus' || def.type==='softmax' || def.type==='svm') {
             new_defs.push({type:'fc', num_neurons: def.num_classes});
           }
           if(def.type==='regression') {

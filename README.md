@@ -24,7 +24,10 @@ Simply add the convnetjs-extras scripts along with the convnetjs library.
 ```javascript
 <script src="modules/convnet-min.js"></script>
 <script src="modules/convnet-extras-min.js"></script>
+
 ```
+
+
 
 ## Activation Functions
 ### LeakyRELU
@@ -47,6 +50,11 @@ f'(x) = \begin{cases}
 \alpha & \text{if } x \leq 0 
 \end{cases}
 $$
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'leaky_relu', alpha: 0.1}); 
+```
 
 where $\alpha$ is a small constant (by default 0.01) that determines the slope of the function for negative inputs.
 
@@ -72,6 +80,12 @@ f'(x) = \begin{cases}
 \end{cases}
 $$
 
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'elu', alpha: 0.01}); 
+```
+
 where $\alpha$ is a hyperparameter that controls the value to which the function asymptotically approaches for negative inputs.
 
 
@@ -93,6 +107,11 @@ f'(x) = \begin{cases}
 \end{cases}
 $$
 
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'frelu'}); 
+```
 
 ### Swish/SiLU
 Swish is a smooth, non-monotonic activation function that tends to perform better than ReLU on deeper models. It is defined as the product of the input and its sigmoid function.
@@ -112,6 +131,12 @@ $$
 
 where $\sigma(x)$ is the sigmoid function.
 
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'swish'}); 
+```
+
 ### PLU
 Piecewise Linear Unit (PLU) is an activation function that allows for multiple linear segments, which can help in capturing complex patterns in the data.
 
@@ -130,6 +155,12 @@ f'(x) = \begin{cases}
 \alpha & \text{if } x > c 
 \end{cases}
 $$
+
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'plu'}); 
+```
 
 ### PiLU
 Piecewise Linear Unit (PiLU) is an activation function that introduces two linear segments with different slopes, creating a piecewise linear transition. It enhances the representational capacity of the network by allowing for more flexible and diverse transformations of the input data.
@@ -152,6 +183,12 @@ f'(x) = \begin{cases}
 \end{cases}
 $$
 
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'pilu'}); 
+```
+
 ### DoubleReLU
 DoubleReLU is an activation function composed of two rectified linear units (ReLU) applied sequentially. It provides a simple yet effective way to introduce non-linearity into the network while maintaining computational efficiency. The double application of ReLU allows for a more pronounced transformation of the input data, potentially capturing more complex patterns in the data.
 
@@ -164,6 +201,12 @@ x - \alpha, & x > \alpha \\
 x + \alpha, & x < -\alpha 
 \end{cases}
 $$
+
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'double_relu', alpha:0.5}); 
+```
 
 **Derivative:**
 
@@ -189,6 +232,12 @@ $$
 f'(x) = \tanh(\text{softplus}(x)) + x \cdot \text{sech}^2(\text{softplus}(x)) \cdot \sigma(x)
 $$
 
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'mish'}); 
+```
+
 ### Gish
 Gish is a novel activation function that combines exponential and logarithmic transformations to provide robust non-linearity. It has demonstrated strong performance in deep learning models by effectively handling negative inputs and providing smooth gradients, which can enhance training stability and model performance.
 
@@ -204,6 +253,12 @@ $$
 f'(x) = \ln\left(2 - e^{-e^x}\right) + x \cdot \frac{e^x \cdot e^{-e^x}}{2 - e^{-e^x}}
 $$
 
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'gish'}); 
+```
+
 ### Softplus
 Softplus is a smooth and continuous activation function defined as the logarithm of the exponential of the input plus one. It has the advantage of being differentiable everywhere, which allows for stable gradients during training.
 
@@ -218,6 +273,12 @@ $$
 $$
 f'(x) = \sigma(x)
 $$
+
+**Example:**
+
+```javascript
+layer_defs.push({type:'softplus', num_classes:10});
+```
 
 
 ### Logish
@@ -236,6 +297,12 @@ where $\sigma(x)$ is the sigmoid function.
 $$
 f'(x) = \ln\left(1 + \sigma(x)\right) + x \cdot \frac{\sigma(x) \cdot (1 - \sigma(x))}{1 + \sigma(x)}
 $$
+
+**Example:**
+
+```javascript
+layer_defs.push({type:'fc', num_neurons:20, activation:'logish'}); 
+```
 
 
 ### Softmin
@@ -256,6 +323,12 @@ f(x_i) \cdot (1 - f(x_i)) & \text{if } i = j \\
 \end{cases}
 $$
 
+**Example:**
+
+```javascript
+layer_defs.push({type:'softmin', num_classes:10});
+```
+
 ### Softsign
 Softsign is a smooth and differentiable activation function that approximates the sign function with a soft transition. This function provides a continuous approximation of the sign function, helping to mitigate the problem of vanishing gradients and improving the learning dynamics in neural networks.
 
@@ -270,6 +343,12 @@ $$
 $$
 f'(x) = \frac{1}{(1 + |x|)^2}
 $$
+
+**Example:**
+
+```javascript
+layer_defs.push({type:'softsign', num_classes:10});
+```
 
 ### Softshrink
 Softshrink is a thresholding activation function that introduces sparsity by shrinking values towards zero. This function is useful for regularization and feature selection, as it helps to reduce the impact of small values and promote sparsity in the activations.
@@ -293,6 +372,12 @@ f'(x) = \begin{cases}
 \end{cases}
 $$
 
+**Example:**
+
+```javascript
+layer_defs.push({type:'softshrink', num_classes:10, lambda: 0.5});
+```
+
 ### Hardshrink
 Hardshrink is a simple threshold-based activation function that sets values within a specific range to zero. This function is effective in scenarios where you want to introduce sparsity and handle outliers by zeroing out values within a certain range.
 
@@ -313,6 +398,12 @@ f'(x) = \begin{cases}
 0, & \text{otherwise}
 \end{cases}
 $$
+
+**Example:**
+
+```javascript
+layer_defs.push({type:'hardshrink', num_classes:10, lambda: 0.5});
+```
 
 ## TODO
 
