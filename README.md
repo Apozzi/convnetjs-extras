@@ -50,6 +50,7 @@ f'(x) = \begin{cases}
 \alpha & \text{if } x \leq 0 
 \end{cases}
 $$
+
 **Example:**
 
 ```javascript
